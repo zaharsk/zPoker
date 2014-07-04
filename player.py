@@ -9,7 +9,7 @@ class Player(object):
         self.combo = None  # Сильнейшая комбинация игрока
         self.act = ''  # Текущее действие/ставка игрока
         self.last_act = ''  # Предыдущее действие/ставка игрока
-        self.iq = 'comp'  # Человек или компьютер.
+        self.human = False  # Человек или компьютер.
         self.in_game = True
         self.dealer = False  # Является ли игрок дилером
 
