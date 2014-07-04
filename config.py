@@ -1,7 +1,10 @@
 import sys
 
 class Config(object):
-    """docstring for Config"""
+    """
+    Класс настроек. Общий для всех остальных.
+    ВАЖНО: Должен быть загружен первым.
+    """
     def __init__(self):
         self.game_states = ['pre_flop', 'flop', 'turn', 'river']
         self.n_of_players = 6
@@ -17,7 +20,7 @@ class Config(object):
         self.start_bank = 6000  # Общий банк игроков за столом. В начале игры делится поровну
         self.start_small_blind = 50  # Базовая ставка малого блайнда
         self.start_big_blind = 100  # Базовая ставка большого блайнда
-        self.player_names = [
+        self.player_names = [  # Имена игроков для создания стола
             'Василий',
             'Анна',
             'Сергей',

@@ -1,18 +1,27 @@
 class Player(object):
-    """docstring for Player"""
+    """
+    Класс игрока.
+    При инициализации стола создаётся массив объектов этого класса в количестве,
+    указанном в классе Config.
+    """
     def __init__(self, name, bank):
-        self.cards = []  # Player hand
-        self.combo = None  # Player combo
-        self.act = ''  # Current action
-        self.last_act = ''  # Last action
-        self.iq = 'comp'  # Computer, human or draw. Deafault: comp
+        self.cards = []  # Карты игрока
+        self.combo = None  # Сильнейшая комбинация игрока
+        self.act = ''  # Текущее действие/ставка игрока
+        self.last_act = ''  # Предыдущее действие/ставка игрока
+        self.iq = 'comp'  # Человек или компьютер.
         self.in_game = True
-        self.dealer = False  # Current dealer
+        self.dealer = False  # Является ли игрок дилером
 
-        self.name = name  # Player name
-        self.bank = bank  # Player bank
+        self.name = name  # Имя игрока
+        self.bank = bank  # Текущий банк игрока
 
     def do_check(self, table_bank, bit):
+        """
+        Действие Check.
+        Записывает Check в аттрибут act текущего экземпляра класса Player.
+        Возвращает нулевую ставку и Check.
+        """
         self.act = 'Check'
         res = {
             'bit': 0,
@@ -21,6 +30,11 @@ class Player(object):
         return res
 
     def do_fold(self, table_bank, bit):
+        """
+        Действие Fold.
+        Записывает Fold в аттрибут act текущего экземпляра класса Player.
+        Возвращает нулевую ставку и Fold.
+        """
         self.act = 'Fold'
         res = {
             'bit': 0,
@@ -29,6 +43,13 @@ class Player(object):
         return res
 
     def do_call(self, table_bank, bit):
+        """
+        Действие Call.
+        Записывает Call в аттрибут act текущего экземпляра класса Player,
+        проверяет хватает ли у игрока денег на принятие текущей ставки и
+        уменьшает её в случае необходимости.
+        Возвращает ставку и Call.
+        """
         self.act = 'Call'
 
         if self.bank >= bit:
@@ -42,6 +63,13 @@ class Player(object):
         return res
 
     def do_raise(self, table_bank, new_bit):
+        """
+        Действие Raise.
+        Записывает Raise в аттрибут act текущего экземпляра класса Player,
+        проверяет хватает ли у игрока денег на поднятие текущей ставки и
+        уменьшает её в случае необходимости.
+        Возвращает ставку и Raise.
+        """
         self.act = 'Raise: ' + str(new_bit)
 
         if self.bank >= new_bit:

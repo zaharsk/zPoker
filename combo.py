@@ -1,5 +1,9 @@
 class Combo(object):
-    """docstring for Combo"""
+    """
+    Класс комбинации игрока.
+    При проверке комбинаций выбирается старшая и записывается в атрибут объекта
+    класса Player.
+    """
     def __init__(self, index, name, cards, text):
         self.index = index
         self.name = name
