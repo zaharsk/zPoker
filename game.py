@@ -1,3 +1,5 @@
+from random import *
+
 class Game(object):
     """
     Класс игры.
@@ -44,7 +46,9 @@ class Game(object):
 
         self.tbl.give_bits(state, self.states)
 
-        
+        self.tbl.bit = self.tbl.bb  # Возвращаем минимальную ставку на большой блайнд
+        self.tbl.act_player = self.tbl.index_of_dealer()  # Ставим активного игрока на дилера
+        self.tbl.clear_bits()  # Обнуляем историю ставок в конце раунда
         
         return None
 
@@ -53,3 +57,33 @@ class Game(object):
         Закрытие раздачи.
         Подсчёт результатов, удаление проигравших.
         """
+        def select_winner():
+            if self.tbl.in_game_players('no_fold') == None:
+                for plr in self.tbl.players:
+                    if plr.act != 'Fold':
+                        return plr
+
+            winner_index = randint(0, len(self.tbl.players) - 1)
+            while self.tbl.players[winner_index] not in self.tbl.in_game_players('no_fold'):
+                winner_index = randint(0, len(self.tbl.players) - 1)
+
+            return self.tbl.players[winner_index]  # Возвращаем игрока - победителя
+
+        def remove_loosers():
+            for plr in self.tbl.players:
+                if plr.bank == 0:
+                    plr.in_game = False
+            return None
+
+        win_player = select_winner()
+        remove_loosers()
+
+        if self.tbl.in_game_players('no_fold') != None:
+            self.tbl.move_dealer()
+
+            win_player.bank += self.tbl.banks[0]
+            self.tbl.banks[0] = 0
+
+            self.tbl.clear_log()
+            self.tbl.clear_acts('full')
+            self.tbl.clear_bits()

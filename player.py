@@ -11,6 +11,7 @@ class Player(object):
         self.human = False  # Человек или компьютер.
         self.in_game = True  # Есть ли деньги для продолжения игры
         self.dealer = False  # Является ли игрок дилером
+        self.bit = 0
 
         self.name = name  # Имя игрока
         self.bank = bank  # Текущий банк игрока
@@ -22,6 +23,7 @@ class Player(object):
         Возвращает нулевую ставку и Check.
         """
         self.act = 'Check'
+        self.bit = 0
         res = {
             'bit': 0,
             'act': self.act
@@ -35,6 +37,7 @@ class Player(object):
         Возвращает нулевую ставку и Fold.
         """
         self.act = 'Fold'
+        self.bit = 0
         res = {
             'bit': 0,
             'act': self.act
@@ -49,16 +52,18 @@ class Player(object):
         уменьшает её в случае необходимости.
         Возвращает ставку и Call.
         """
-        self.act = 'Call'
+        self.act = 'Call ' + str(bit)
+        self.bit = bit
         res = {'act': self.act}
 
-        if self.bank >= bit:
+        if self.bank > bit:
             res['bit'] = bit
             self.bank -= bit
         else:
             res['bit'] = self.bank
+            res['act'] = 'Call ' + str(self.bank) + ' All-in'
+            self.act = 'Call ' + str(self.bank) + ' All-in'
             self.bank = 0
-            res['act'] = 'All-in'
 
         return res
 
@@ -70,15 +75,17 @@ class Player(object):
         уменьшает её в случае необходимости.
         Возвращает ставку и Raise.
         """
-        self.act = 'Raise: ' + str(new_bit)
+        self.act = 'Raise ' + str(new_bit)
+        self.bit = new_bit
         res = {'act': self.act}
 
-        if self.bank >= new_bit:
+        if self.bank > new_bit:
             res['bit'] = new_bit
             self.bank -= new_bit
         else:
             res['bit'] = self.bank
+            res['act'] = 'Raise ' + str(self.bank) + ' All-in'
+            self.act = 'Raise ' + str(self.bank) + ' All-in'
             self.bank = 0
-            res['act'] = 'All-in'
 
         return res

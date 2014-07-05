@@ -31,6 +31,7 @@ class Table(object):
         self.bb = 0  # Большой блайнд
         self.acts_log = []
         self.raise_log = False
+        self.check_log = False
 
         self.n_of_players = n_of_players
         self.start_bank = start_bank
@@ -91,11 +92,11 @@ class Table(object):
 
     def in_game_players(self, no_fold=False):
         if no_fold:
-            plrs_list = [plr for plr in self.players if plr.in_game and plr.act != 'Fold' and plr.act != 'All-in']
+            plrs_list = [plr for plr in self.players if plr.in_game and plr.act != 'Fold' and plr.act[-6:] != 'All-in']
         else:
             plrs_list = [plr for plr in self.players if plr.in_game]
 
-        if len(plrs_list) < 2:
+        if len(plrs_list) <= 1:
             return None
 
         return plrs_list
@@ -137,8 +138,13 @@ class Table(object):
             if full:
                 plr.act = ''
             else:
-                if plr.act != 'Fold' and plr.act != 'All-in':
+                if plr.act != 'Fold' and plr.act[-6:] != 'All-in':
                     plr.act = ''
+        return None
+
+    def clear_bits(self):
+        for plr in self.players:
+            plr.bit = 0
         return None
 
     def take_cards(self):
@@ -236,64 +242,96 @@ class Table(object):
 
         if act == '':
             act_res = plr.do_call(self.banks[0], self.bit)
+            self.check_log = False
+        elif act == 'e':
+            act_res = plr.do_check(self.banks[0], self.bit)
+            self.check_log = True
+        elif act == 'f':
+            act_res = plr.do_fold(self.banks[0], self.bit)
+        elif act == 'c':
+            act_res = plr.do_call(self.banks[0], self.bit)
+            self.check_log = False
+        elif act.isdigit():
+            act_res = plr.do_raise(self.banks[0], int(act))
+            self.bit = act_res['bit']
+            self.check_log = False
 
         return act_res
 
 
     def give_bits(self, state, states):
-        self.acts_log.append(['--- ---', '---'])
-        acts = []
-        if state != states[0] and not self.raise_log:
+        self.acts_log.append(['--- ---', '---']) # Для красоты вывода
+        acts = []  # Очищаем лог текущего раунда ставок
+        self.check_log = False  # Сбрасываем check_log в начале раунда
+
+        if state != states[0] and not self.raise_log:  # Очищаем общий лог, если не pre_flop и не второй раунд ставок
             self.clear_log()
             self.clear_acts()
 
-        for player in self.in_game_players():
+        in_game_list = self.in_game_players('no_fold')
 
-            if self.in_game_players('no_fold') == None:
-                break
+        if in_game_list == None:  # Если остался один активный игрок, прекращаем ставки
+                return None
 
-            plr = self.next_act_player('bit')
+        for player in in_game_list:  # Раунд ставок
+            plr = self.next_act_player('bit')  # Берём следующего игрока, который может делать ставку
 
-            if plr.human:
+            if in_game_list == None:  # Если остался один активный игрок, прекращаем ставки
+                return None
+
+            if self.raise_log and plr.bit == self.bit:  # Если предыдущая ставка игрока равняется минимальной и был Raise, делаем выходим из раунда
+                    break
+
+            if plr.human:  # Если игрок-человек - принимаем ставку
                 act = self.human_bit(plr)
             else:
-
                 # [Start] Принятие решение о действии компьютерным игроком
-                if plr.bank >= self.bit + self.bb:
-                    plr_act = randint(1, 3)
-                else:
-                    plr_act = randint(1, 2)
+                ### Проверка доступных действий ###
+                if plr.bank >= self.bit + self.bb:  # Если у игрока хватает на Raise, то ему доступно всё
+                    if plr.bit == self.bit or not self.acts_log or self.check_log:
+                        plr_act = choice([0, 3])  # Если предыдущая ставка игрока равняется текущей, или пустой лог, или до этого был Check то ему доступны Check, Raise
+                    else:
+                        plr_act = randint(1, 3)  # В противном случае только Fold, Call, Raise
+                else:  # Если на Raise не хватает, то доступны Check, Call и Raise после Check предыдущего игрока
+                    if plr.bit == self.bit or not self.acts_log or self.check_log:
+                        plr_act = choice([0, 3])  # Если предыдущая ставка игрока равняется текущей, или пустой лог, или до этого был Check то ему доступны Check, Raise
+                    else:
+                        plr_act = randint(1, 2)  # В противном случае только Fold, Call
+
+                ### ###
 
                 if plr_act == 0:
                     act = plr.do_check(self.banks[0], self.bit)
+                    self.check_log = True
                 elif plr_act == 1:
                     act = plr.do_fold(self.banks[0], self.bit)
                 elif plr_act == 2:
                     act = plr.do_call(self.banks[0], self.bit)
+                    self.check_log = False
                 elif plr_act == 3:
                     act = plr.do_raise(self.banks[0], self.bit + self.bb)
                     self.bit = act['bit']
+                    self.check_log = False
                 # [End] Принятие решение о действии компьютерным игроком
-
-
 
             self.banks[0] += act['bit']
             self.acts_log.append([plr.name, plr.act])
-            acts.append(plr.act)
-
-            #self.clear_acts()
-            
+            acts.append(plr.act)            
 
         acts = [log[:5] for log in acts]
-        print(act)
 
         if 'Raise' in acts:
             self.raise_log = True
             self.give_bits(state, states)
             self.raise_log = False
 
-        self.bit = self.bb  # Возвращаем минимальную ставку на большой блайнд
-        self.act_player = self.index_of_dealer()  # Ставим активного игрока на дилера
+        return None
+
+    def move_dealer(self):
+        dealer_index = self.index_of_dealer()
+        new_dealer = self.next_act_player()
+
+        self.players[dealer_index].dealer = False
+        new_dealer.dealer = True
 
         return None
-            

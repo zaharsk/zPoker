@@ -21,14 +21,28 @@ game = Game(tbl, cfg.game_states)
 ### ### ### Конец создания объектов ### ### ###
 
 game.start()
-game.open_hand()
+while True:
 
-for state in cfg.game_states:   
-    game.change_state(state)
-    draw.desk(tbl)
-    input('Ставки для '+ state + ' приняты. Нажмите ENTER для продолжения.')
+    game.open_hand()
 
-    if tbl.in_game_players('no_fold') == None or len(tbl.in_game_players('no_fold')) < 2:
+    for state in cfg.game_states:   
+        game.change_state(state)
+        draw.desk(tbl)
+        input('Ставки для '+ state + ' приняты. Нажмите ENTER для продолжения.')
+
+        if tbl.in_game_players('no_fold') == None or len(tbl.in_game_players('no_fold')) < 2:
+            break
+    game.close_hand()
+    print('Результат раздачи')
+    
+    input('Нажмите ENTER для следующей раздачи.')
+    plrs_list = [plr for plr in tbl.players]
+
+    if len(plrs_list) == 1:
         break
 
-print('Результат раздачи')
+    human = [plr for plr in tbl.players if plr.human][0]
+    if human.bank == 0:
+        break
+
+print('Результат игры')
