@@ -7,7 +7,7 @@ class Player(object):
     def __init__(self, name, bank):
         self.cards = []  # Карты игрока
         self.combo = None  # Сильнейшая комбинация игрока
-        self.act = None  # Текущее действие/ставка игрока
+        self.act = ''  # Текущее действие/ставка игрока
         self.human = False  # Человек или компьютер.
         self.in_game = True  # Есть ли деньги для продолжения игры
         self.dealer = False  # Является ли игрок дилером
@@ -50,15 +50,16 @@ class Player(object):
         Возвращает ставку и Call.
         """
         self.act = 'Call'
+        res = {'act': self.act}
 
         if self.bank >= bit:
-            res = {'bit': bit}
+            res['bit'] = bit
             self.bank -= bit
         else:
-            res = {'bit': self.bank}
+            res['bit'] = self.bank
             self.bank = 0
+            res['act'] = 'All-in'
 
-        res['act'] = self.act
         return res
 
     def do_raise(self, table_bank, new_bit):
@@ -70,13 +71,14 @@ class Player(object):
         Возвращает ставку и Raise.
         """
         self.act = 'Raise: ' + str(new_bit)
+        res = {'act': self.act}
 
         if self.bank >= new_bit:
-            res = {'bit': new_bit}
+            res['bit'] = new_bit
             self.bank -= new_bit
         else:
-            res = {'bit': self.bank}
+            res['bit'] = self.bank
             self.bank = 0
+            res['act'] = 'All-in'
 
-        res['act'] = 'Raise'
         return res

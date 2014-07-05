@@ -1,6 +1,7 @@
 from random import *
 from player import *
 from card import *
+from render import desk as render_desk
 
 class Table(object):
     """
@@ -29,6 +30,7 @@ class Table(object):
         self.sb = 0  # Малый блайнд
         self.bb = 0  # Большой блайнд
         self.acts_log = []
+        self.raise_log = False
 
         self.n_of_players = n_of_players
         self.start_bank = start_bank
@@ -86,15 +88,14 @@ class Table(object):
             if plr.dealer:
                 return self.players.index(plr)
 
+
     def in_game_players(self, no_fold=False):
         if no_fold:
-            plrs_list = [plr for plr in self.players if plr.in_game and plr.act != 'Fold']
+            plrs_list = [plr for plr in self.players if plr.in_game and plr.act != 'Fold' and plr.act != 'All-in']
         else:
             plrs_list = [plr for plr in self.players if plr.in_game]
 
-        print(len(plrs_list))
-
-        if len(plrs_list) < 1:
+        if len(plrs_list) < 2:
             return None
 
         return plrs_list
@@ -103,24 +104,23 @@ class Table(object):
         """
         Выбираем следующего игрока для действия.
         """
-        act_index = self.act_player + 1
+        self.act_player += 1
 
-        if act_index == len(self.players):
-                act_index = 0
+        if self.act_player == len(self.players):
+                self.act_player = 0
 
         if bit:
             in_game_list = self.in_game_players('no_fold')
         else:
             in_game_list = self.in_game_players()
 
-        while self.players[act_index] not in in_game_list:
-            act_index = self.act_player + 1
-            if act_index == len(self.players):
-                act_index = 0
+        while self.players[self.act_player] not in in_game_list:
+            self.act_player += 1
 
-        self.act_player = act_index
+            if self.act_player == len(self.players):
+                self.act_player = 0
 
-        return self.players[act_index]
+        return self.players[self.act_player]
 
     def clear_log(self):
         """
@@ -137,7 +137,7 @@ class Table(object):
             if full:
                 plr.act = ''
             else:
-                if plr.act != 'Fold':
+                if plr.act != 'Fold' and plr.act != 'All-in':
                     plr.act = ''
         return None
 
@@ -200,6 +200,7 @@ class Table(object):
             sb_player.bank = 0
 
         sb_player.act = 'SB ' + str(plr_sb)
+        self.acts_log.append([sb_player.name, sb_player.act])
 
         bb_player = self.next_act_player()
 
@@ -211,39 +212,88 @@ class Table(object):
             bb_player.bank = 0
 
         bb_player.act = 'BB ' + str(plr_bb)
+        self.acts_log.append([bb_player.name, bb_player.act])
 
         self.banks[0] = plr_sb + plr_bb
 
         self.bit = self.bb
 
+    def human_bit(self, plr):
 
-    def give_bits(self):
+        def take_act():
+            human_act = input(
+                'Check: e\n' + 
+                'Fold: f\n' + 
+                'Call: c\n' + 
+                'Rise: новая ставка (число)\n' + 
+                'Ваша ставка[c]:'
+                )
+            return human_act
 
-        if self.in_game_players('no_fold') == None:
-            return None
+        render_desk(self)
+
+        act = take_act()
+
+        if act == '':
+            act_res = plr.do_call(self.banks[0], self.bit)
+
+        return act_res
+
+
+    def give_bits(self, state, states):
+        self.acts_log.append(['--- ---', '---'])
+        acts = []
+        if state != states[0] and not self.raise_log:
+            self.clear_log()
+            self.clear_acts()
 
         for player in self.in_game_players():
+
+            if self.in_game_players('no_fold') == None:
+                break
+
             plr = self.next_act_player('bit')
-            plr_act = randint(0, 3)
-            if plr_act == 0:
-                act = plr.do_check(self.banks[0], self.bit)
-            elif plr_act == 1:
-                act = plr.do_fold(self.banks[0], self.bit)
-            elif plr_act == 2:
-                act = plr.do_call(self.banks[0], self.bit)
-            elif plr_act == 3:
-                act = plr.do_raise(self.banks[0], self.bit * 2)
-                self.bit = act['bit']
+
+            if plr.human:
+                act = self.human_bit(plr)
+            else:
+
+                # [Start] Принятие решение о действии компьютерным игроком
+                if plr.bank >= self.bit + self.bb:
+                    plr_act = randint(1, 3)
+                else:
+                    plr_act = randint(1, 2)
+
+                if plr_act == 0:
+                    act = plr.do_check(self.banks[0], self.bit)
+                elif plr_act == 1:
+                    act = plr.do_fold(self.banks[0], self.bit)
+                elif plr_act == 2:
+                    act = plr.do_call(self.banks[0], self.bit)
+                elif plr_act == 3:
+                    act = plr.do_raise(self.banks[0], self.bit + self.bb)
+                    self.bit = act['bit']
+                # [End] Принятие решение о действии компьютерным игроком
+
+
 
             self.banks[0] += act['bit']
             self.acts_log.append([plr.name, plr.act])
+            acts.append(plr.act)
 
-            self.clear_acts()
+            #self.clear_acts()
+            
 
-        #if 3 in acts:
-            #self.give_bits()
+        acts = [log[:5] for log in acts]
+        print(act)
 
-        self.clear_acts()
+        if 'Raise' in acts:
+            self.raise_log = True
+            self.give_bits(state, states)
+            self.raise_log = False
+
+        self.bit = self.bb  # Возвращаем минимальную ставку на большой блайнд
+        self.act_player = self.index_of_dealer()  # Ставим активного игрока на дилера
 
         return None
             

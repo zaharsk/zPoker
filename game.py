@@ -21,14 +21,16 @@ class Game(object):
         """
         self.tbl.hand_number += 1
         self.tbl.take_cards()
-        self.tbl.give_blinds()
+        self.tbl.give_blinds()  # На pre_flop собираем блайнды
+        
         return None
 
     def change_state(self, state):
 
+
         def open_cards():
             if state == self.states[0]:
-                pass  # Ничего не меняем, по-умолчанию на столе ''
+                pass
             elif state == self.states[1]:
                 self.tbl.cards = self.tbl.cards_pool[:3]  # Открываем первые три карты из пула
             elif state == self.states[2]:
@@ -39,8 +41,11 @@ class Game(object):
 
         self.state = state
         open_cards()
-        self.tbl.give_bits()
 
+        self.tbl.give_bits(state, self.states)
+
+        
+        
         return None
 
     def close_hand(self):

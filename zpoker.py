@@ -1,11 +1,11 @@
 from config import *
 from table import *
 from game import *
-from render import *
+import render as draw
 
 ### ### ### Начало создания объектов ### ### ###
 cfg = Config()
-render = Render()
+#render = Render()
 tbl = Table(
     cfg.n_of_players,
     cfg.start_bank,
@@ -25,11 +25,10 @@ game.open_hand()
 
 for state in cfg.game_states:   
     game.change_state(state)
-    render.desk(tbl)
+    draw.desk(tbl)
     input('Ставки для '+ state + ' приняты. Нажмите ENTER для продолжения.')
-    tbl.clear_log()
 
-    if len(tbl.in_game_players('no_fold')) < 2:
+    if tbl.in_game_players('no_fold') == None or len(tbl.in_game_players('no_fold')) < 2:
         break
 
 print('Результат раздачи')

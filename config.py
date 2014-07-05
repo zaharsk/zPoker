@@ -7,7 +7,7 @@ class Config(object):
     """
     def __init__(self):
         self.game_states = ['pre_flop', 'flop', 'turn', 'river']
-        self.n_of_players = 2
+        self.n_of_players = 4
 
         if sys.stdout.encoding == 'cp866':  # Консоль windows
             self.deck_suits = [chr(3), chr(4), chr(5), chr(6)]
