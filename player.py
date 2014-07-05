@@ -7,10 +7,9 @@ class Player(object):
     def __init__(self, name, bank):
         self.cards = []  # Карты игрока
         self.combo = None  # Сильнейшая комбинация игрока
-        self.act = ''  # Текущее действие/ставка игрока
-        self.last_act = ''  # Предыдущее действие/ставка игрока
+        self.act = None  # Текущее действие/ставка игрока
         self.human = False  # Человек или компьютер.
-        self.in_game = True
+        self.in_game = True  # Есть ли деньги для продолжения игры
         self.dealer = False  # Является ли игрок дилером
 
         self.name = name  # Имя игрока

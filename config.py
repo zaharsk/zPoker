@@ -7,7 +7,7 @@ class Config(object):
     """
     def __init__(self):
         self.game_states = ['pre_flop', 'flop', 'turn', 'river']
-        self.n_of_players = 6
+        self.n_of_players = 2
 
         if sys.stdout.encoding == 'cp866':  # Консоль windows
             self.deck_suits = [chr(3), chr(4), chr(5), chr(6)]
@@ -21,18 +21,18 @@ class Config(object):
         self.start_small_blind = 50  # Базовая ставка малого блайнда
         self.start_big_blind = 100  # Базовая ставка большого блайнда
         self.player_names = [  # Имена игроков для создания стола
-            'Василий',
-            'Анна',
-            'Сергей',
-            'Анастасия',
+            'Васил',
+            'Анна_',
+            'Серге',
+            'Анаст',
             'Антон',
-            'Светлана',
-            'Пётр',
-            'Дмитрий',
+            'Светл',
+            'Пётр_',
+            'Дмитр',
             'Вадим',
             'Ольга',
             'Мария',
-            'Андрей',
-            'Алексей']
+            'Андре',
+            'Алекс']
         self.doubles_blinds = True  # Удваиваивать блайнды
         self.doubles_hands = 10  # Промежуток раздач для удвоения.
