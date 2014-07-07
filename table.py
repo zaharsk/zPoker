@@ -96,6 +96,8 @@ class Table(object):
         else:
             plrs_list = [plr for plr in self.players if plr.in_game]
 
+        #print([plr.name for plr in plrs_list])
+
         if len(plrs_list) <= 1:
             return None
 
@@ -201,11 +203,13 @@ class Table(object):
         if sb_player.bank > self.sb:
             plr_sb = self.sb
             sb_player.bank -= self.sb
+            sb_player.act = 'SB ' + str(plr_sb)
         else:
             plr_sb = sb_player.bank
             sb_player.bank = 0
+            sb_player.act = 'SB ' + str(plr_sb) + ' All-in'
 
-        sb_player.act = 'SB ' + str(plr_sb)
+        
         self.acts_log.append([sb_player.name, sb_player.act])
 
         bb_player = self.next_act_player()
@@ -213,16 +217,20 @@ class Table(object):
         if bb_player.bank > self.bb:
             plr_bb = self.bb
             bb_player.bank -= self.bb
+            bb_player.act = 'BB ' + str(plr_bb)
         else:
             plr_bb = bb_player.bank
             bb_player.bank = 0
+            bb_player.act = 'BB ' + str(plr_bb) + ' All-in'
 
-        bb_player.act = 'BB ' + str(plr_bb)
+        
         self.acts_log.append([bb_player.name, bb_player.act])
 
         self.banks[0] = plr_sb + plr_bb
 
         self.bit = self.bb
+
+        return None
 
     def human_bit(self, plr):
 
@@ -268,16 +276,15 @@ class Table(object):
             self.clear_log()
             self.clear_acts()
 
-        in_game_list = self.in_game_players('no_fold')
 
-        if in_game_list == None:  # Если остался один активный игрок, прекращаем ставки
-                return None
+        if self.in_game_players('no_fold') == None:  # Проверяем количество игроков в игре
+            return None
 
-        for player in in_game_list:  # Раунд ставок
+        for player in self.in_game_players('no_fold'):  # Раунд ставок
+            if self.in_game_players('no_fold') == None:  # Проверяем количество игроков в игре
+                break
+
             plr = self.next_act_player('bit')  # Берём следующего игрока, который может делать ставку
-
-            if in_game_list == None:  # Если остался один активный игрок, прекращаем ставки
-                return None
 
             if self.raise_log and plr.bit == self.bit:  # Если предыдущая ставка игрока равняется минимальной и был Raise, делаем выходим из раунда
                     break
@@ -316,14 +323,16 @@ class Table(object):
 
             self.banks[0] += act['bit']
             self.acts_log.append([plr.name, plr.act])
-            acts.append(plr.act)            
+            acts.append(plr.act)
 
-        acts = [log[:5] for log in acts]
+        acts = [log[:5] for log in acts]  # Записываем лог текущего раунда ставок
 
         if 'Raise' in acts:
             self.raise_log = True
             self.give_bits(state, states)
             self.raise_log = False
+
+        self.clear_bits()
 
         return None
 

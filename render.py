@@ -32,20 +32,28 @@ def desk(tbl):
     print('-' * 80)
     x = 0
     for plr in tbl.players:
-        if plr.dealer:
-            d = 'D'
-        else:
-            d = ' '
-        print(
-            x,
-            '[' + str(plr.bank) + ']',
-            plr.name,
-            plr.cards[0].name, plr.cards[1].name,
-            d,
-            plr.act
-            )
+        if plr.in_game:
+        ###
+            if plr.dealer:
+                d = 'D'
+            else:
+                d = ' '
+            print(
+                x,
+                '[' + str(plr.bank) + ']',
+                plr.name,
+                plr.cards[0].name, plr.cards[1].name,
+                d,
+                plr.act
+                )
+        ###
         x += 1
     print('-' * 80)
     for act in tbl.acts_log:
         print(act[0], act[1])
     print('-' * 80)
+
+def hand(winner):
+    #clear()
+
+    print('В раздаче победил', winner.name)

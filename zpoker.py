@@ -20,29 +20,42 @@ tbl = Table(
 game = Game(tbl, cfg.game_states)
 ### ### ### Конец создания объектов ### ### ###
 
+def you_loose():
+    human = [plr for plr in tbl.players if plr.human][0]  # Если у игрока не осталось денег, заканчиваем игру
+    if human.bank == 0:
+        return True
+    else:
+        return False
+
 game.start()
 while True:
 
+    plrs_list = [plr for plr in tbl.players if plr.in_game]
+    if len(plrs_list) == 1:   # Если в игре остался один, заканчиваем игру
+        break
+
     game.open_hand()
 
-    for state in cfg.game_states:   
+    for state in cfg.game_states:
+
+        if tbl.in_game_players('no_fold') == None or len(tbl.in_game_players('no_fold')) < 2:
+            break
+
         game.change_state(state)
         draw.desk(tbl)
         input('Ставки для '+ state + ' приняты. Нажмите ENTER для продолжения.')
 
-        if tbl.in_game_players('no_fold') == None or len(tbl.in_game_players('no_fold')) < 2:
-            break
-    game.close_hand()
-    print('Результат раздачи')
+        
+    winner = game.close_hand()
+
+    draw.desk(tbl)
+    draw.hand(winner)
+    input('Нажмите ENTER для продолжения.')
+
+    if you_loose():
+        break
     
-    input('Нажмите ENTER для следующей раздачи.')
-    plrs_list = [plr for plr in tbl.players]
-
-    if len(plrs_list) == 1:
-        break
-
-    human = [plr for plr in tbl.players if plr.human][0]
-    if human.bank == 0:
-        break
-
-print('Результат игры')
+if you_loose():
+    print('Вы проиграли')
+else:
+    print('Вы выиграли')

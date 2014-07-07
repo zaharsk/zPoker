@@ -48,7 +48,10 @@ class Game(object):
 
         self.tbl.bit = self.tbl.bb  # Возвращаем минимальную ставку на большой блайнд
         self.tbl.act_player = self.tbl.index_of_dealer()  # Ставим активного игрока на дилера
-        self.tbl.clear_bits()  # Обнуляем историю ставок в конце раунда
+        self.tbl.clear_bits()  # Обнуляем историю ставок в конце раздачи
+        self.tbl.clear_log()  # Очищаем лог в конце раздачи
+        #self.tbl.clear_acts()  # Очищаем действия игроков в конце раздачи
+
         
         return None
 
@@ -76,14 +79,17 @@ class Game(object):
             return None
 
         win_player = select_winner()
+        
+
+        #if self.tbl.in_game_players('no_fold') != None:
+        win_player.bank += self.tbl.banks[0]
+        self.tbl.banks[0] = 0
+
         remove_loosers()
+        self.tbl.move_dealer()
 
-        if self.tbl.in_game_players('no_fold') != None:
-            self.tbl.move_dealer()
+        self.tbl.clear_log()
+        self.tbl.clear_acts('full')
+        self.tbl.clear_bits()
 
-            win_player.bank += self.tbl.banks[0]
-            self.tbl.banks[0] = 0
-
-            self.tbl.clear_log()
-            self.tbl.clear_acts('full')
-            self.tbl.clear_bits()
+        return win_player
