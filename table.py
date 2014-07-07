@@ -1,6 +1,7 @@
 from random import *
 from player import *
 from card import *
+from combo import *
 from render import desk as render_desk
 
 class Table(object):
@@ -342,5 +343,11 @@ class Table(object):
 
         self.players[dealer_index].dealer = False
         new_dealer.dealer = True
+
+        return None
+
+    def check_combos(self, state):
+        for plr in self.players:
+            plr.combo = Combo(plr.cards + self.cards, state)
 
         return None

@@ -16,7 +16,7 @@ class Config(object):
         elif sys.stdout.encoding == 'cp1251':  # GUI windows
             self.deck_suits = ['H', 'D', 'C', 'S']
         
-        self.deck_values = ['A', 'K', 'Q', 'J', '10', '9', '8', '7', '6', '5', '4', '3', '2']  # Sorted from biggest to smaller
+        self.deck_values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
         self.start_bank = 6000  # Общий банк игроков за столом. В начале игры делится поровну
         self.start_small_blind = 50  # Базовая ставка малого блайнда
         self.start_big_blind = 100  # Базовая ставка большого блайнда

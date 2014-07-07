@@ -44,6 +44,8 @@ class Game(object):
         self.state = state
         open_cards()
 
+        self.tbl.check_combos(self.state)
+
         self.tbl.give_bits(state, self.states)
 
         self.tbl.bit = self.tbl.bb  # Возвращаем минимальную ставку на большой блайнд
@@ -64,11 +66,20 @@ class Game(object):
             if self.tbl.in_game_players('no_fold') == None:
                 for plr in self.tbl.players:
                     if plr.act != 'Fold':
-                        return plr
+                        return [plr]
 
-            winner_index = randint(0, len(self.tbl.players) - 1)
-            while self.tbl.players[winner_index] not in self.tbl.in_game_players('no_fold'):
-                winner_index = randint(0, len(self.tbl.players) - 1)
+            combo_indexes = [plr.combo.index for plr in self.tbl.in_game_players('no_fold')]
+
+            winners = [plr for plr in self.tbl.in_game_players('no_fold') if plr.combo.index == max(combo_indexes)]
+
+            if len(winners) == 1:
+                return winners[0]
+            else:
+                powers = [plr.combo.power for plr in winners]
+
+                winners = [plr for plr in winners if plr.combo.power == max(powers)]
+
+                return winners
 
             return self.tbl.players[winner_index]  # Возвращаем игрока - победителя
 
@@ -78,18 +89,26 @@ class Game(object):
                     plr.in_game = False
             return None
 
-        win_player = select_winner()
+        winners = select_winner()
         
 
-        #if self.tbl.in_game_players('no_fold') != None:
-        win_player.bank += self.tbl.banks[0]
+        if len(winners) == 1:
+            winners[0].bank += self.tbl.banks[0]
+        else:
+            for plr in winners:
+                plr.bank += self.tbl.banks[0] // len(winners)
+
         self.tbl.banks[0] = 0
 
         remove_loosers()
-        self.tbl.move_dealer()
-
+        
         self.tbl.clear_log()
         self.tbl.clear_acts('full')
         self.tbl.clear_bits()
 
-        return win_player
+        return winners
+
+    def move_dealer(self):
+        self.tbl.move_dealer()
+
+        return None

@@ -46,14 +46,16 @@ while True:
         input('Ставки для '+ state + ' приняты. Нажмите ENTER для продолжения.')
 
         
-    winner = game.close_hand()
+    winners = game.close_hand()
 
     draw.desk(tbl)
-    draw.hand(winner)
+    draw.hand(winners)
     input('Нажмите ENTER для продолжения.')
 
     if you_loose():
         break
+
+    game.move_dealer()
     
 if you_loose():
     print('Вы проиграли')

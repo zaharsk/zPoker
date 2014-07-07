@@ -42,18 +42,29 @@ def desk(tbl):
                 x,
                 '[' + str(plr.bank) + ']',
                 plr.name,
-                plr.cards[0].name, plr.cards[1].name,
+                ' '.join([c.name for c in plr.cards]),
                 d,
-                plr.act
+                plr.act,
+                plr.combo.text
                 )
         ###
         x += 1
+    print('-' * 80)
+    for plr in tbl.players:
+        if plr.human:
+            print(
+                'Ваши карты ' + ' '.join([c.name for c in plr.cards]),
+                '\t',
+                plr.combo.text
+                )
     print('-' * 80)
     for act in tbl.acts_log:
         print(act[0], act[1])
     print('-' * 80)
 
-def hand(winner):
+def hand(winners):
     #clear()
-
-    print('В раздаче победил', winner.name)
+    if len(winners) == 1:
+        print('В раздаче победил', winners[0].name)
+    else:
+        print('Банк разделили ' + ' '.join([plr.name for plr in winners]))
