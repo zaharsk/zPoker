@@ -1,5 +1,6 @@
 import copy
 
+
 class Combo(object):
     """
     Класс комбинации игрока.
@@ -18,8 +19,8 @@ class Combo(object):
 
         def test_cards(all_cards):
             plr_pool = sorted(all_cards, key=lambda card: card.val)
-
-            ace_plr_pool = copy.deepcopy(plr_pool)  # Создаём полную копию пула дял работы с тузами
+            # Создаём полную копию пула дял работы с тузами
+            ace_plr_pool = copy.deepcopy(plr_pool)
             for card in ace_plr_pool:
                 if card.val == 12:
                     card.val = -1
@@ -71,7 +72,11 @@ class Combo(object):
                     pos += 1
                     res += val ** pos
 
-                return {'index':i, 'val': res, 'rel_val': i + res / (p_max + 1)}
+                return {
+                    'index': i,
+                    'val': res,
+                    'rel_val': i + res / (p_max + 1)
+                    }
 
             def high_card():
                 self.cards = plr_pool[-5:]
@@ -95,7 +100,7 @@ class Combo(object):
                     for card in temp_pool:
                         if card.name == res[1].name:
                             temp_pool.remove(card)  # Удаляем карты из пула, чтобы получить старшие без пар
-                    
+
                     temp_pool = temp_pool[-3:]
 
                     for card in plr_pool:
@@ -186,7 +191,6 @@ class Combo(object):
                         i += 1
                     return {'straight': straight, 'flush': flush, 'cards': cards}
 
-                
                 if self.state == 'pre_flop':  # Невозможно на pre_flop
                     return None
 
@@ -199,8 +203,6 @@ class Combo(object):
                     res.append(test_sf(plr_pool[1:6]))
                     res.append(test_sf(plr_pool[2:7]))
 
-                    
-
                 if 12 in vals:
 
                     res.append(test_sf(ace_plr_pool))
@@ -211,7 +213,7 @@ class Combo(object):
                         res.append(test_sf(ace_plr_pool[:5]))
                         res.append(test_sf(ace_plr_pool[1:6]))
                         res.append(test_sf(ace_plr_pool[2:7]))
-                
+
                 for result in res:
                     if result['straight'] or result['flush']:
                         if result['straight'] and result['flush']:
@@ -250,7 +252,7 @@ class Combo(object):
                             temp_pool.remove(card)
 
                         two_res = [card for card in temp_pool if vals.count(card.val) == 2]  # Выбираем все карты, которые встречаются дважды
-                        
+
                         if two_res:  # Если что-то получили в результате
                             self.cards = plr_pool
                             self.text = 'Фул-хаус ' + ' '.join([c.name for c in self.cards])
