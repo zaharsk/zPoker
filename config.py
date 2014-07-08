@@ -16,8 +16,8 @@ class Config(object):
 
         self.deck_values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
         self.game_states = ['pre_flop', 'flop', 'turn', 'river']
-        self.n_of_players = 2
-        self.start_bank = 6000  # Общий банк игроков за столом. В начале игры делится поровну
+        self.n_of_players = 6
+        self.start_bank = 1200  # Общий банк игроков за столом. В начале игры делится поровну
         self.start_small_blind = 50  # Базовая ставка малого блайнда
         self.start_big_blind = 100  # Базовая ставка большого блайнда
         self.doubles_blinds = True  # Удваиваивать блайнды

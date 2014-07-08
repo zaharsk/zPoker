@@ -22,55 +22,64 @@ class Combo(object):
             # Создаём полную копию пула дял работы с тузами
             ace_plr_pool = copy.deepcopy(plr_pool)
             for card in ace_plr_pool:
-                if card.val == 12:
-                    card.val = -1
+                if card.val == 14:
+                    card.val = 1
 
             ace_plr_pool = sorted(ace_plr_pool, key=lambda card: card.val)
 
             vals = [card.val for card in plr_pool]
 
             def calc_power(cards, combo):
+
+                def pwr(cards, m=False):
+                    if not m:
+                        hex_vals = [hex(card.val) for card in cards]
+                    else:
+                        hex_vals = [hex(val) for val in vals]
+
+                    x_vals = [str(hex_val)[2:] for hex_val in hex_vals]
+                    hex_pwr = ''.join(x_vals)
+                    pwr = int(hex_pwr, 16)
+
+                    return pwr
+
                 if combo == 'high_card':
                     i = 0
-                    p_max = 264561
+                    p_max = pwr([9, 11, 12, 13, 14], 'max')
 
                 elif combo == 'one_pair':
                     i = 1
-                    p_max = 271008
+                    p_max = pwr([11, 12, 13, 14, 14], 'max')
 
                 elif combo == 'two_pairs':
                     i = 2
-                    p_max = 271030
+                    p_max = pwr([12, 13, 13, 14, 14], 'max')
 
                 elif combo == 'three':
                     i = 3
-                    p_max = 271427
+                    p_max = pwr([12, 13, 14, 14, 14], 'max')
 
                 elif combo == 'straight':
                     i = 4
-                    p_max = 264562
+                    p_max = pwr([10, 11, 12, 13, 14], 'max')
 
                 elif combo == 'flush':
                     i = 5
-                    p_max = 264561
+                    p_max = pwr([9, 11, 12, 13, 14], 'max')
 
                 elif combo == 'full_house':
                     i = 6
-                    p_max = 271428
+                    p_max = pwr([13, 13, 14, 14, 14], 'max')
 
                 elif combo == 'four':
                     i = 7
-                    p_max = 271451
+                    p_max = pwr([13, 14, 14, 14, 14], 'max')
 
                 elif combo == 'straight_flush':
                     i = 8
-                    p_max = 264562
+                    p_max = pwr([10, 11, 12, 13, 14], 'max')
 
-                pos = 0
-                res = 0
-                for val in [c.val for c in cards]:
-                    pos += 1
-                    res += val ** pos
+                res = pwr(cards)
 
                 return {
                     'index': i,
@@ -196,15 +205,7 @@ class Combo(object):
 
                 res = []
 
-                res.append(test_sf(plr_pool[:5]))
-                if self.state == 'turn':
-                    res.append(test_sf(plr_pool[1:6]))
-                elif self.state == 'river':
-                    res.append(test_sf(plr_pool[1:6]))
-                    res.append(test_sf(plr_pool[2:7]))
-
-                if 12 in vals:
-
+                if 14 in vals:
                     res.append(test_sf(ace_plr_pool))
                     if self.state == 'turn':
                         res.append(test_sf(ace_plr_pool[:5]))
@@ -213,6 +214,13 @@ class Combo(object):
                         res.append(test_sf(ace_plr_pool[:5]))
                         res.append(test_sf(ace_plr_pool[1:6]))
                         res.append(test_sf(ace_plr_pool[2:7]))
+
+                res.append(test_sf(plr_pool[:5]))
+                if self.state == 'turn':
+                    res.append(test_sf(plr_pool[1:6]))
+                elif self.state == 'river':
+                    res.append(test_sf(plr_pool[1:6]))
+                    res.append(test_sf(plr_pool[2:7]))
 
                 for result in res:
                     if result['straight'] or result['flush']:

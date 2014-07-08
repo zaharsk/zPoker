@@ -15,7 +15,8 @@ def desk(tbl, hand_number):
     print('-' * 80)
 
     print(
-        'Раздача', hand_number,
+        'Раздача', hand_number, '\t',
+        'Банк', tbl.banks[0],'\t',
         ' '.join([card.name for card in tbl.cards])
         )
 
@@ -33,7 +34,8 @@ def desk(tbl, hand_number):
             plr.name,
             d,
             ' '.join([card.name for card in plr.cards]),
-            plr.act
+            plr.act,
+            plr.combo.text
             )
 
     print('-' * 80)
@@ -50,8 +52,11 @@ def state_result(state, acts_log):
     return None
 
 
-def hand_result():
-    print('Результат раздачи')
+def hand_result(winners):
+    if len(winners) == 1:
+        print('В раздаче победил', winners[0].name, 'с комбинацией', winners[0].combo.text)
+    else:
+        print('Банк разделили ' + ', '.join([plr.name for plr in winners]) + ' с комбинацией ', winners[0].combo.text)
     message = 'Нажмите ENTER, чтобы продолжить.'
     input(message)
     return None
@@ -62,11 +67,3 @@ def game_result():
     message = 'Нажмите ENTER, чтобы продолжить.'
     input(message)
     return None
-
-
-def hand(winners):
-    #clear()
-    if len(winners) == 1:
-        print('В раздаче победил', winners[0].name)
-    else:
-        print('Банк разделили ' + ' '.join([plr.name for plr in winners]))

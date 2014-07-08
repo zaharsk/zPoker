@@ -23,7 +23,7 @@ class Table(object):
             val = randint(0, len(vals) - 1)
             name = suis[sui] + vals[val]
 
-            card = Card(sui, val, name)
+            card = Card(sui, val + 2, name)
             return card
 
         n_of_cards = 5 + 2 * len(self.players)

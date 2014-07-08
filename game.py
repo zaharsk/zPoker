@@ -8,29 +8,30 @@ class Game(object):
     """
     Класс игры.
     """
-    def __init__(self):
+    def __init__(self, n_of_players):
         self.state = None
         self.active_player_index = None
         self.hand_number = None
         self.acts_log = []  # Лог действий игроков
         self.min_bit = 0  # Минимальная ставка
+        self.n_of_players = n_of_players
 
     def create_table(self):
         self.tbl = Table()  # Создаём пустой стол
         return None
 
-    def create_players(self, n_of_players, names, start_bank):
-        if n_of_players < 2:
-            n_of_players = 2  # Проверяем настройки
-        if n_of_players > 6:
-            n_of_players = 6  # Проверяем настройки
+    def create_players(self, names, start_bank):
+        if self.n_of_players < 2:
+            self.n_of_players = 2  # Проверяем настройки
+        if self.n_of_players > 6:
+            self.n_of_players = 6  # Проверяем настройки
 
         self.tbl.players = []
 
-        for x in range(n_of_players):
+        for x in range(self.n_of_players):
             name = names[randint(0, len(names) - 1)]  # Выбираем случаное имя
 
-            plr_bank = start_bank // n_of_players
+            plr_bank = start_bank // self.n_of_players
             player = Player(x, name, plr_bank)  # Создаём игрока
             names.remove(name)  # Удаляем имя из пула
             self.tbl.players.append(player)  # Добавляем игрока за стол
@@ -70,10 +71,13 @@ class Game(object):
     def next_player(self):
         self.active_player_index += 1
 
-        if self.active_player_index == len(self.active_players()):
-            self.active_player_index = 0
+        while self.active_player_index not in [plr.index for plr in self.active_players()]:
+            self.active_player_index += 1
 
-        player = self.tbl.players[self.active_player_index]
+            if self.active_player_index >= self.n_of_players:
+                self.active_player_index = 0
+
+        player = [plr for plr in self.active_players() if plr.index == self.active_player_index][0]
         return player
 
     def clear_log(self):
@@ -96,20 +100,33 @@ class Game(object):
     def move_dealer(self):
         old_dealer_index = [plr.index for plr in self.active_players() if plr.dealer][0]
         self.active_player_index = old_dealer_index
-
-        old_dealer = self.active_players()[old_dealer_index]
+        old_dealer = [plr for plr in self.active_players() if plr.index == old_dealer_index][0]
         old_dealer.dealer = False
+
+        self.remove_loosers()
 
         new_dealer = self.next_player()
         new_dealer.dealer = True
         self.active_player_index = new_dealer.index
-        print(old_dealer.name, '->', new_dealer.name)
         return None
 
+    def hand_result(self):
+        combo_indexes = [plr.combo.index for plr in self.active_players()]
+        winners = [plr for plr in self.active_players() if plr.combo.index == max(combo_indexes)]
+        combo_powers = [plr.combo.power for plr in winners]
+        winners = [plr for plr in winners if plr.combo.power == max(combo_powers)]
+
+        if len(winners) == 1:
+            winner = winners[0]
+            winner.bank += self.tbl.banks[0]
+        else:
+            for plr in winners:
+                plr.bank += self.tbl.banks[0] // len(winners)
+
+        self.tbl.banks[0] = 0
+        return winners
+
     def change_state(self, state, states, start_sb, start_bb, d_blinds, d_int):
-        self.clear_log()
-        self.clear_plrs_acts('full')
-        self.clear_plrs_bits()
 
         def take_blinds():
             if d_blinds:  # Вычисление блайндов если умножаются
@@ -147,6 +164,15 @@ class Game(object):
             bb_player.bit = bb
             self.acts_log.append({'plr': bb_player.name, 'act': act})
 
+        def check_combos():
+            for plr in self.active_players():
+                plr.combo = Combo(plr.cards + self.tbl.cards, state)
+            return None
+
+        self.clear_log()
+        self.clear_plrs_acts('full')
+        self.clear_plrs_bits()
+
         if state == states[0]:
             take_blinds()
             self.tbl.cards = []
@@ -156,3 +182,5 @@ class Game(object):
             self.tbl.cards = self.tbl.deck[:4]
         elif state == states[3]:
             self.tbl.cards = self.tbl.deck
+
+        check_combos()
