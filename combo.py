@@ -32,11 +32,11 @@ class Combo(object):
 
             def calc_power(cards, combo):
 
-                def pwr(cards, m=False):
-                    if not m:
-                        hex_vals = [hex(card.val) for card in cards]
+                def pwr(cards, mx=False):
+                    if not mx:
+                        hex_vals = [hex(card.val) for card in cards[::-1]]
                     else:
-                        hex_vals = [hex(val) for val in vals]
+                        hex_vals = [hex(val) for val in vals[::-1]]
 
                     x_vals = [str(hex_val)[2:] for hex_val in hex_vals]
                     hex_pwr = ''.join(x_vals)

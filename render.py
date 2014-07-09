@@ -10,13 +10,21 @@ def clear():
     return None
 
 
-def desk(tbl, hand_number):
+def desk(tbl, hand_number, min_bit):
     clear()
+    dealer, = [plr.name for plr in tbl.players if plr.dealer]
     print('-' * 80)
 
     print(
         'Раздача', hand_number, '\t',
-        'Банк', tbl.banks[0],'\t',
+        'Дилер', dealer
+        )
+
+    print('-' * 80)
+
+    print(
+        'Банк', tbl.banks[0], '\t',
+        'Ставка', min_bit, '\t',
         ' '.join([card.name for card in tbl.cards])
         )
 
@@ -43,9 +51,9 @@ def desk(tbl, hand_number):
     return None
 
 
-def state_result(state, acts_log):
-    for act in acts_log:
-        print(act['plr'], act['act'])
+def state_result(state, full_log):
+    for log in full_log:
+        print(log['bits_round'], log['plr'], log['act'], log['bit'])
     message = 'Ставки для ' + str(state) + ' приняты.'
     message += 'Нажмите ENTER, чтобы продолжить.'
     input(message)
