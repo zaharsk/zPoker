@@ -19,6 +19,7 @@ class Combo(object):
 
         def test_cards(all_cards):
             plr_pool = sorted(all_cards, key=lambda card: card.val)
+            fl_pool = sorted(all_cards, key=lambda card: [card.sui, card.val])
             # Создаём полную копию пула дял работы с тузами
             ace_plr_pool = copy.deepcopy(plr_pool)
             for card in ace_plr_pool:
@@ -221,6 +222,13 @@ class Combo(object):
                 elif self.state == 'river':
                     res.append(test_sf(plr_pool[1:6]))
                     res.append(test_sf(plr_pool[2:7]))
+
+                res.append(test_sf(fl_pool[:5]))
+                if self.state == 'turn':
+                    res.append(test_sf(fl_pool[1:6]))
+                elif self.state == 'river':
+                    res.append(test_sf(fl_pool[1:6]))
+                    res.append(test_sf(fl_pool[2:7]))
 
                 for result in res:
                     if result['straight'] or result['flush']:

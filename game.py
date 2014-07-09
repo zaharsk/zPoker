@@ -146,7 +146,8 @@ class Game(object):
             else:
                 self.tbl.banks[0] += sb_player.bank
                 sb_player.bank = 0
-                act = 'SB ' + str(sb) + 'All-in'
+                act = 'SB ' + str(sb_player.bank) + 'All-in'
+
             sb_player.act = act
             sb_player.bit = sb
             self.acts_log.append({'plr': sb_player.name, 'act': act})
@@ -159,7 +160,8 @@ class Game(object):
             else:
                 self.tbl.banks[0] += bb_player.bank
                 bb_player.bank = 0
-                act = 'BB ' + str(bb) + 'All-in'
+                act = 'BB ' + str(bb_player.bank) + 'All-in'
+
             bb_player.act = act
             bb_player.bit = bb
             self.acts_log.append({'plr': bb_player.name, 'act': act})

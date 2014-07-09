@@ -18,52 +18,6 @@ class Player(object):
         self.name = name  # Имя игрока
         self.bank = bank  # Текущий банк игрока
 
-    def do_check(self, table_bank, bit):
-        self.act = 'Check'
-        self.bit = 0
-        res = {
-            'bit': 0,
-            'act': self.act
-        }
-        return res
+    def action(self):
 
-    def do_fold(self, table_bank, bit):
-        self.act = 'Fold'
-        self.bit = 0
-        res = {
-            'bit': 0,
-            'act': self.act
-        }
-        return res
-
-    def do_call(self, table_bank, bit):
-        self.act = 'Call ' + str(bit)
-        self.bit = bit
-        res = {'act': self.act}
-
-        if self.bank > bit:
-            res['bit'] = bit
-            self.bank -= bit
-        else:
-            res['bit'] = self.bank
-            res['act'] = 'Call ' + str(self.bank) + ' All-in'
-            self.act = 'Call ' + str(self.bank) + ' All-in'
-            self.bank = 0
-
-        return res
-
-    def do_raise(self, table_bank, new_bit):
-        self.act = 'Raise ' + str(new_bit)
-        self.bit = new_bit
-        res = {'act': self.act}
-
-        if self.bank > new_bit:
-            res['bit'] = new_bit
-            self.bank -= new_bit
-        else:
-            res['bit'] = self.bank
-            res['act'] = 'Raise ' + str(self.bank) + ' All-in'
-            self.act = 'Raise ' + str(self.bank) + ' All-in'
-            self.bank = 0
-
-        return res
+        return None
