@@ -6,9 +6,9 @@ class Combo(cfg):
     """docstring for Combo"""
     def test_cards(self):
         normal_pool = sorted(self.pool, key=lambda card: card.val, reverse=True)
-        flash_pool = sorted(self.pool, key=lambda card: card.sui, reverse=True)
 
         pool_vals = [card.val for card in normal_pool]
+        pool_suis = [card.sui for card in normal_pool]
 
         if 14 in pool_vals:
             ace_pool = copy.deepcopy(self.pool)
@@ -125,6 +125,92 @@ class Combo(cfg):
 
                     put_result()
 
+        def flush():
+            if self.power > 5 or len(normal_pool) < 5:
+                return None
+            res = [card for card in normal_pool if pool_suis.count(card.sui) > 4]
+
+            if res:
+                result['cards'] = res
+                result['text'] = 'Флеш '
+                result['combo_index'] = 5
+
+                put_result()
+
+        def full_house():
+            if self.power > 6 or len(normal_pool) < 5:
+                return None
+            three_res = [card for card in normal_pool if pool_vals.count(card.val) > 2]
+            if three_res:
+                two_res = [card for card in normal_pool if pool_vals.count(card.val) > 1 and card.val != three_res[0].val]
+                if two_res:
+                    result['cards'] = three_res[:3] + two_res[:2]
+                    result['text'] = 'Фул-хаус '
+                    result['combo_index'] = 6
+
+                    put_result()
+
+        def four():
+            if self.power > 7 or len(normal_pool) < 5:
+                return None
+
+            res = [card for card in normal_pool if pool_vals.count(card.val) == 4]
+
+            if res:
+                cards = [card for card in normal_pool if card.val != res[0].val]
+
+                result['cards'] = res + [cards[0]]
+                result['text'] = 'Каре '
+                result['combo_index'] = 7
+
+                put_result()
+
+        def straight_flush():
+            if len(normal_pool) < 5:
+                return None
+
+            def check_sf(cards):
+                straight_test = True
+                flush_test = True
+                x = 0
+                while x < 4:
+                    straight_test = straight_test and cards[x].val - 1 == cards[x+1].val
+                    flush_test = flush_test and cards[x].sui == cards[x+1].sui
+                    x += 1
+                return {'straight_test': straight_test, 'flush_test': flush_test, 'cards': cards}
+
+            res_list = []
+
+            if 14 in pool_vals:
+                x = 0
+                while True:
+                    pre_res = check_sf(ace_pool[-5-x:][:5])
+                    res_list.append(pre_res)
+                    x += 1
+                    if x == len(ace_pool) - 4:
+                        break
+
+            x = 0
+            while True:
+                pre_res = check_sf(normal_pool[-5-x:][:5])
+                res_list.append(pre_res)
+                x += 1
+                if x == len(normal_pool) - 4:
+                    break
+
+            for res in res_list:
+                if res['straight_test'] and res['flush_test']:
+
+                    result['cards'] = res['cards']
+                    result['text'] = 'Стрит-флэш '
+                    result['combo_index'] = 8
+
+                    put_result()
+
+        straight_flush()
+        four()
+        full_house()
+        flush()
         straight()
         three()
         two_pairs()
