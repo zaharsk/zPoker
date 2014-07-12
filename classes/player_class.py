@@ -41,8 +41,16 @@ class Player(cfg):
         if self.bank > max_bank:
             actions.remove('All-in')
 
-        act = random.choice(actions)
+        min_power = 761856
 
+        act_power = self.combo.power // min_power
+
+        if act_power < 1:
+            act = actions[0]
+        else:
+            act = actions[1]
+        print(self.name, min_bit, actions, act_power, act)
+        print('')
         if act == 'Check':
             self.last_act = 'Check'
             self.last_bit = 0

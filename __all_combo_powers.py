@@ -5,7 +5,7 @@ def calc(combo):
         pre_power += '000'
     power = int(pre_power, 16)
 
-    print(combo['name'], power, power/100000, combo['cards'])
+    print(combo['name'], power, power//761856, combo['cards'])
 
 combos = [
     {'name': 'min_hq', 'cards': [0, 3, 2]},

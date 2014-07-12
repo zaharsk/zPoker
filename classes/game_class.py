@@ -93,6 +93,13 @@ class Game(cfg):
         self.min_bit = self.bb
         self.__log(bb_player.name, act['name'], act['bit'])
 
+    def __daler_id(self):
+        dealer, = [plr for plr in self.players if plr.dealer]
+
+        ind = self.players.index(dealer)
+
+        return ind
+
     def active_players(self):
         skip_list = ['Fold', 'All-in']
 
@@ -109,6 +116,10 @@ class Game(cfg):
                 if player.last_act != 'Fold' and player.last_act != 'All-in':
                     player.last_act = 'None'
 
+    def clear_bits(self):
+        for player in self.players:
+            player.last_bit = 0
+
     def process_the_state(self, state):
         self.__log('-' * 80)
         self.log.append('Начинаем принимать ставки на ' + state)
@@ -116,15 +127,15 @@ class Game(cfg):
         if state == self.states[0]:
             self.__take_blinds()
         elif state == self.states[1]:
-            self.river += self.deck.pop()
-            self.river += self.deck.pop()
-            self.river += self.deck.pop()
+            self.river += [self.deck.pop()]
+            self.river += [self.deck.pop()]
+            self.river += [self.deck.pop()]
             self.__log('На столе', [card.name for card in self.river])
         elif state == self.states[2]:
-            self.river += self.deck.pop()
+            self.river += [self.deck.pop()]
             self.__log('На столе', [card.name for card in self.river])
         elif state == self.states[3]:
-            self.river += self.deck.pop()
+            self.river += [self.deck.pop()]
             self.__log('На столе', [card.name for card in self.river])
 
         def take_bits():
@@ -134,7 +145,7 @@ class Game(cfg):
                 player = self.__next_player()
 
                 # Если игрок повышал и после него не повышали, выходим
-                if player.last_act == 'Raise' and player.last_bit == self.min_bit:
+                if player.last_act != 'BB' and player.last_bit == self.min_bit and self.min_bit > 0:
                     self.__log('Ставки приняты. После', player.name, 'никто не повышал.')
                     break
 
@@ -147,7 +158,7 @@ class Game(cfg):
                 act = player.action(self.players, self.river, self.min_bit, self.bb)
                 self.bank += act['bit']
 
-                self.__log(player.name, act['name'], act['bit'])
+                self.__log(player.name, act['name'], act['bit'], [card.name for card in player.cards], player.combo.text, [c.name for c in player.cards + self.river])
                 self.__log('Банк:', self.bank)
 
                 # Если игрок повысил, повышаем минимальную ставку
@@ -166,7 +177,7 @@ class Game(cfg):
                     act = last_player.action(self.players, self.river, self.min_bit, self.bb)
                     self.bank += act['bit']
 
-                    self.__log(last_player.name, act['name'], act['bit'])
+                    self.__log(last_player.name, act['name'], act['bit'], [card.name for card in last_player.cards], last_player.combo.text, [c.name for c in last_player.cards + self.river])
                     self.__log('Банк:', self.bank)
 
                     self.__log('Ставки приняты.', last_player.name, 'последний.')
@@ -181,3 +192,6 @@ class Game(cfg):
             self.__log(player.name, player.last_act, player.last_bit)
 
         self.clear_acts()
+        self.clear_bits()
+        self.min_bit = 0
+        self.current_player_id = self.__daler_id()
