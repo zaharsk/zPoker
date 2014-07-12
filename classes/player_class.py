@@ -15,7 +15,7 @@ class Player(cfg):
         self.bank = bank
 
         random.shuffle(cfg.names)
-        self.name = cfg.names.pop()
+        self.name = cfg.names[:].pop()
 
     def __check_combo(self, river):
         check_cards = self.cards + river
@@ -23,6 +23,7 @@ class Player(cfg):
 
     def action(self, players, river, min_bit, bb):
         self.__check_combo(river)
+
         actions = ['Fold', 'Check', 'Call', 'Raise', 'All-in']
         max_bank = max([player.bank for player in players])
 
@@ -32,7 +33,7 @@ class Player(cfg):
         if min_bit == 0 or min_bit == self.last_bit:
             actions.remove('Fold')
 
-        if self.bank <= min_bit or min_bit == 0:
+        if self.bank <= min_bit or min_bit == 0 or self.last_bit == min_bit:
             actions.remove('Call')
 
         if self.bank < min_bit + bb:
@@ -49,8 +50,7 @@ class Player(cfg):
             act = actions[0]
         else:
             act = actions[1]
-        print(self.name, min_bit, actions, act_power, act)
-        print('')
+
         if act == 'Check':
             self.last_act = 'Check'
             self.last_bit = 0

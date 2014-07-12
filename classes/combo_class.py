@@ -4,14 +4,14 @@ import copy
 
 class Combo(cfg):
     """docstring for Combo"""
-    def test_cards(self, pool):
-        normal_pool = sorted(pool, key=lambda card: card.val, reverse=True)
-        flash_pool = sorted(pool, key=lambda card: card.sui, reverse=True)
+    def test_cards(self):
+        normal_pool = sorted(self.pool, key=lambda card: card.val, reverse=True)
+        flash_pool = sorted(self.pool, key=lambda card: card.sui, reverse=True)
 
         pool_vals = [card.val for card in normal_pool]
 
         if 14 in pool_vals:
-            ace_pool = copy.deepcopy(pool)
+            ace_pool = copy.deepcopy(self.pool)
             for card in ace_pool:
                 if card.val == 14:
                     card.val = 1
@@ -47,38 +47,86 @@ class Combo(cfg):
             if self.power > 1:
                 return None
             res = [card for card in normal_pool if pool_vals.count(card.val) == 2]
-            print('op', [c.name for c in res], len(res))
-            if len(res) == 2:
-                cards = normal_pool[:5]
-                x = 0
-                while res[0] not in cards and res[1] not in cards:
-                    cards = normal_pool[x:5+x]
-                    x += 1
 
-                result['cards'] = cards
+            if len(res) == 2:
+                cards = [card for card in normal_pool if card.val != res[0].val]
+
+                result['cards'] = res + cards[:3]
                 result['text'] = 'Одна пара '
                 result['combo_index'] = 1
 
                 put_result()
 
         def two_pairs():
-            if self.power > 2:
+            if self.power > 2 or len(normal_pool) < 5:
                 return None
             res = [card for card in normal_pool if pool_vals.count(card.val) == 2][:4]
-            print('tp', [c.name for c in res], len(res))
-            if len(res) == 4:
-                cards = normal_pool[:5]
-                x = 0
-                while res[0] not in cards and res[1] not in cards and res[2] not in cards and res[3] not in cards:
-                    cards = normal_pool[x:5+x]
-                    x += 1
 
-                result['cards'] = cards
+            if len(res) == 4:
+                cards = [card for card in normal_pool if card.val != res[0].val and card.val != res[2].val]
+
+                result['cards'] = res + [cards[0]]
                 result['text'] = 'Две пары '
                 result['combo_index'] = 2
 
                 put_result()
 
+        def three():
+            if self.power > 3 or len(normal_pool) < 5:
+                return None
+            res = [card for card in normal_pool if pool_vals.count(card.val) == 3]
+
+            if len(res) == 3:
+                cards = [card for card in normal_pool if card.val != res[0].val]
+
+                result['cards'] = res + cards[:2]
+                result['text'] = 'Тройка '
+                result['combo_index'] = 3
+
+                put_result()
+
+        def straight():
+            if self.power > 4 or len(normal_pool) < 5:
+                return None
+
+            def check_str(cards):
+                straight_test = True
+                x = 0
+                while x < 4:
+                    straight_test = straight_test and cards[x].val - 1 == cards[x+1].val
+                    x += 1
+                return {'straight_test': straight_test, 'cards': cards}
+
+            res_list = []
+
+            if 14 in pool_vals:
+                x = 0
+                while True:
+                    pre_res = check_str(ace_pool[-5-x:][:5])
+                    res_list.append(pre_res)
+                    x += 1
+                    if x == len(ace_pool) - 4:
+                        break
+
+            x = 0
+            while True:
+                pre_res = check_str(normal_pool[-5-x:][:5])
+                res_list.append(pre_res)
+                x += 1
+                if x == len(normal_pool) - 4:
+                    break
+
+            for res in res_list:
+                if res['straight_test']:
+
+                    result['cards'] = res['cards']
+                    result['text'] = 'Стрит '
+                    result['combo_index'] = 4
+
+                    put_result()
+
+        straight()
+        three()
         two_pairs()
         one_pair()
         high_card()
@@ -89,4 +137,4 @@ class Combo(cfg):
         self.power = 0
         self.text = ''
         self.cards = []
-        self.test_cards(pool)
+        self.test_cards()
