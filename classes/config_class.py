@@ -45,3 +45,10 @@ class CardConfig(object):
 
     def __init__(self):
         super(CardConfig, self).__init__()
+
+
+class ComboConfig(object):
+    """Первоначальные настройки для класса Combo"""
+
+    def __init__(self):
+        super(ComboConfig, self).__init__()

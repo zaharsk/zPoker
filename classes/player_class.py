@@ -1,4 +1,5 @@
 from .config_class import PlayerConfig as cfg
+from .combo_class import Combo
 import random
 
 
@@ -9,6 +10,7 @@ class Player(cfg):
         self.dealer = False
         self.last_act = 'None'
         self.last_bit = 0
+        self.combo = None
 
         self.bank = bank
 
@@ -16,7 +18,8 @@ class Player(cfg):
         self.name = cfg.names.pop()
 
     def __check_combo(self, river):
-        pass
+        check_cards = self.cards + river
+        self.combo = Combo(check_cards)
 
     def action(self, players, river, min_bit, bb):
         self.__check_combo(river)

@@ -115,6 +115,17 @@ class Game(cfg):
         self.__log('-' * 80)
         if state == self.states[0]:
             self.__take_blinds()
+        elif state == self.states[1]:
+            self.river += self.deck.pop()
+            self.river += self.deck.pop()
+            self.river += self.deck.pop()
+            self.__log('На столе', [card.name for card in self.river])
+        elif state == self.states[2]:
+            self.river += self.deck.pop()
+            self.__log('На столе', [card.name for card in self.river])
+        elif state == self.states[3]:
+            self.river += self.deck.pop()
+            self.__log('На столе', [card.name for card in self.river])
 
         def take_bits():
 

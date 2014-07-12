@@ -6,5 +6,5 @@ class Card(cfg):
     def __init__(self, sui, val):
         super(Card, self).__init__()
         self.sui = sui
-        self.val = val
-        self.name = cfg.suits[self.sui] + cfg.vals[self.val]
+        self.val = val + 2
+        self.name = cfg.suits[self.sui] + cfg.vals[self.val - 2]
