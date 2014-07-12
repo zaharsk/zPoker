@@ -1,3 +1,8 @@
+# Отладочные скрипты
+__all_combo_powers.py
+__combo_resolver.py
+__test_combo.py
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
