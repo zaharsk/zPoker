@@ -24,22 +24,6 @@ class Game(cfg):
         self.current_player_id = self.players.index(player)
         self.__log('Дилер:', player.name)
 
-    def __create_deck(self):
-        self.deck = []
-        for sui in range(len(Card.suits)):
-            for val in range(len(Card.vals)):
-                c = Card(sui, val)
-                self.deck.append(c)
-
-    def __give_cards(self):
-        self.__create_deck()
-        random.shuffle(self.deck)
-        for player in self.players:
-            player.cards = []
-            player_card_1 = [self.deck.pop()]
-            player_card_2 = [self.deck.pop()]
-            player.cards += player_card_1 + player_card_2
-
     def __init__(self):
         super(Game, self).__init__()
         self.log = []
@@ -49,12 +33,29 @@ class Game(cfg):
         self.sb = 0
         self.bb = 0
         self.hand_number = 1
+        self.deck = []
 
         self.states = cfg.states
 
         self.__create_players()
         self.__select_dealer()
-        self.__give_cards()
+
+    def __create_deck(self):
+        deck = []
+        for sui in range(len(Card.suits)):
+            for val in range(len(Card.vals)):
+                c = Card(sui, val)
+                deck.append(c)
+        return deck
+
+    def __give_cards(self):
+        self.__create_deck()
+        random.shuffle(self.deck)
+        for player in self.players:
+            player.cards = []
+            player_card_1 = [self.deck.pop()]
+            player_card_2 = [self.deck.pop()]
+            player.cards += player_card_1 + player_card_2
 
     def __next_player(self):
         self.current_player_id += 1
@@ -119,6 +120,18 @@ class Game(cfg):
     def clear_bits(self):
         for player in self.players:
             player.last_bit = 0
+
+    def hand_init(self):
+        self.__log('-' * 80)
+        self.__log('Раздача №', self.hand_number)
+        self.__log('-' * 80)
+        self.__log('В игре:')
+        for player in self.players:
+            self.__log(player.name, player.bank)
+
+        self.deck = self.__create_deck()
+        random.shuffle(self.deck)
+        self.__give_cards()
 
     def process_the_state(self, state):
         self.__log('-' * 80)
@@ -195,3 +208,60 @@ class Game(cfg):
         self.clear_bits()
         self.min_bit = 0
         self.current_player_id = self.__daler_id()
+
+    def hand_result(self):
+        self.__log('-' * 80)
+        self.__log('Результат раздачи №', self.hand_number)
+        self.__log('-' * 80)
+
+        def __select_winner():
+            if len(self.active_players()) == 1:
+                winner, = self.active_players()
+                winner.bank += self.bank
+                self.__log(winner.name, 'выиграл, не вскрывая карты.')
+            else:
+                win_combo_power = max(player.combo.power for player in self.players)
+                winners = [player for player in self.players if player.combo.power == win_combo_power]
+                if len(winners) == 1:
+                    winner, = winners
+                    winner.bank += self.bank
+                    self.__log(winner.name, 'выиграл с комбинацией', winner.combo.text)
+                else:
+                    for player in winners:
+                        player.bank += self.bank // len(winners)
+                        win_names = ', '.join([player.name for player in winners])
+                        self.__log('Выигрыш разделили', win_names, 'с комбинацией', winners[0].combo.text)
+
+            self.bank = 0
+
+        def __move_dealer():
+            old_dealer_id = self.__daler_id()
+
+            in_game_players = [player for player in self.players if player.bank > 0]
+
+            new_dealer_id = old_dealer_id + 1
+            if new_dealer_id == len(self.players):
+                new_dealer_id = 0
+
+            while self.players[new_dealer_id] not in in_game_players:
+                new_dealer_id = old_dealer_id + 1
+                if new_dealer_id == len(self.players):
+                    new_dealer_id = 0
+
+            self.__log('Новый дилер:', self.players[new_dealer_id].name)
+
+        def __remove_loosers():
+            loosers = []
+            for player in self.players:
+                if player.bank == 0:
+                    loosers.append(player)
+
+            for looser in loosers:
+                self.players.remove(looser)
+
+            self.__log('Из игры выбывают', ', '.join([plr.name for plr in loosers]))
+
+        __select_winner()
+        __move_dealer()
+        __remove_loosers()
+        self.river = []

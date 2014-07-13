@@ -2,6 +2,7 @@
 __all_combo_powers.py
 __combo_resolver.py
 __test_combo.py
+__game_log.log
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

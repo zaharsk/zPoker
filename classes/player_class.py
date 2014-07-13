@@ -14,8 +14,9 @@ class Player(cfg):
 
         self.bank = bank
 
-        random.shuffle(cfg.names)
-        self.name = cfg.names[:].pop()
+        names = cfg.names[:]
+        random.shuffle(names)
+        self.name = names.pop()
 
     def __check_combo(self, river):
         check_cards = self.cards + river
