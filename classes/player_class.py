@@ -5,7 +5,7 @@ import random
 
 class Player(cfg):
     """docstring for PLayer"""
-    def __init__(self, bank):
+    def __init__(self, bank, name):
         super(Player, self).__init__()
         self.dealer = False
         self.last_act = 'None'
@@ -13,10 +13,7 @@ class Player(cfg):
         self.combo = None
 
         self.bank = bank
-
-        names = cfg.names[:]
-        random.shuffle(names)
-        self.name = names.pop()
+        self.name = name
 
     def __check_combo(self, river):
         check_cards = self.cards + river
@@ -24,7 +21,6 @@ class Player(cfg):
 
     def action(self, players, river, min_bit, bb):
         self.__check_combo(river)
-
         actions = ['Fold', 'Check', 'Call', 'Raise', 'All-in']
         max_bank = max([player.bank for player in players])
 
@@ -52,6 +48,8 @@ class Player(cfg):
         else:
             act = actions[1]
 
+        #act = random.choice(actions)
+
         if act == 'Check':
             self.last_act = 'Check'
             self.last_bit = 0
@@ -70,8 +68,6 @@ class Player(cfg):
             self.last_act = 'All-in'
             self.last_bit = self.bank
             self.bank = 0
-
-        return {'name': self.last_act, 'bit': self.last_bit}
 
     def small_blind(self, sb):
         if self.bank > sb:
@@ -96,3 +92,6 @@ class Player(cfg):
             self.bank = 0
 
         return {'name': self.last_act, 'bit': self.last_bit}
+
+if __name__ == '__main__':
+    main()

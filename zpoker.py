@@ -1,26 +1,28 @@
-from classes import Game
+from classes import game_class
+game = game_class.Game()
 
 
-game = Game()
+def show_log():
+    x = 0
+    for line in game.log:
+        print(x, line)
+        x += 1
+    game.log = []
 
 while True:
     game.hand_init()
 
-    for state in game.states:
-        game.process_the_state(state)
-
-        if len(game.active_players()) < 2:
-            break
+    game.process_hand()
 
     game.hand_result()
 
-    if len(game.players) == 1:
+    if len(game.with_bank_plrs()) == 1:
         break
 
     game.hand_number += 1
 
-    for line in game.log:
-        print(line)
+show_log()  # Debug
 
-    if game.hand_number > 3:
-        break
+winner, = game.plrs
+
+print(winner.name, winner.bank)

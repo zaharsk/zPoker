@@ -8,21 +8,24 @@ class Game(cfg):
     """Класс игры"""
     def __log(self, *args):
         message = ' '.join([str(arg) for arg in args])
+        #print(message)
         self.log.append(message)
 
-    def __create_players(self):
-        self.players = []
+    def __create_plrs(self):
+        self.plrs = []
         bank = cfg.all_players_bank // cfg.n_of_players
-        for x in range(cfg.n_of_players):
-            player = Player(bank)
-            self.players.append(player)
-            self.log.append('Новый игрок: ' + player.name + ' ' + str(player.bank))
+        names = cfg.players_names[:]
+        random.shuffle(names)
+
+        for plr in range(cfg.n_of_players):
+            name = names.pop()
+            plr = Player(bank, name)
+            self.plrs.append(plr)
 
     def __select_dealer(self):
-        player = random.choice(self.players)
-        player.dealer = True
-        self.current_player_id = self.players.index(player)
-        self.__log('Дилер:', player.name)
+        plr = random.choice(self.plrs)
+        plr.dealer = True
+        self.current_plr_id = self.plrs.index(plr)
 
     def __init__(self):
         super(Game, self).__init__()
@@ -35,9 +38,7 @@ class Game(cfg):
         self.hand_number = 1
         self.deck = []
 
-        self.states = cfg.states
-
-        self.__create_players()
+        self.__create_plrs()
         self.__select_dealer()
 
     def __create_deck(self):
@@ -49,219 +50,203 @@ class Game(cfg):
         return deck
 
     def __give_cards(self):
-        self.__create_deck()
         random.shuffle(self.deck)
-        for player in self.players:
-            player.cards = []
-            player_card_1 = [self.deck.pop()]
-            player_card_2 = [self.deck.pop()]
-            player.cards += player_card_1 + player_card_2
-
-    def __next_player(self):
-        self.current_player_id += 1
-        if self.current_player_id == len(self.players):
-                self.current_player_id = 0
-
-        skip_list = ['Fold', 'All-in']
-
-        while self.players[self.current_player_id].last_act in skip_list:
-            self.current_player_id += 1
-            if self.current_player_id == len(self.players):
-                self.current_player_id = 0
-
-        next_player = self.players[self.current_player_id]
-
-        return next_player
-
-    def __take_blinds(self):
-        if cfg.double_blinds:  # Вычисление блайндов если умножаются
-            double_index = (self.hand_number - 1) // cfg.double_blinds_interval  # Делим без остатка номер раздачи (от 0) на промежуток
-
-            self.sb = cfg.start_sb * (2 ** double_index)  # Умножаем стартовый блайнд на 2 в степени double_index
-            self.bb = cfg.start_bb * (2 ** double_index)
-        else:
-            self.sb = cfg.start_sb
-            self.bb = cfg.start_bb
-
-        sb_player = self.__next_player()
-        act = sb_player.small_blind(self.sb)
-        self.bank += act['bit']
-        self.__log(sb_player.name, act['name'], act['bit'])
-
-        bb_player = self.__next_player()
-        act = bb_player.big_blind(self.bb)
-        self.bank += act['bit']
-        self.min_bit = self.bb
-        self.__log(bb_player.name, act['name'], act['bit'])
-
-    def __daler_id(self):
-        dealer, = [plr for plr in self.players if plr.dealer]
-
-        ind = self.players.index(dealer)
-
-        return ind
-
-    def active_players(self):
-        skip_list = ['Fold', 'All-in']
-
-        players = [player for player in self.players if player.last_act not in skip_list]
-
-        return players
-
-    def clear_acts(self, full=False):
-        if full:
-            for player in self.players:
-                player.last_act = 'None'
-        else:
-            for player in self.players:
-                if player.last_act != 'Fold' and player.last_act != 'All-in':
-                    player.last_act = 'None'
-
-    def clear_bits(self):
-        for player in self.players:
-            player.last_bit = 0
+        for plr in self.plrs:
+            plr.cards = []
+            plr_card_1 = [self.deck.pop()]
+            plr_card_2 = [self.deck.pop()]
+            plr.cards += plr_card_1 + plr_card_2
 
     def hand_init(self):
-        self.__log('-' * 80)
-        self.__log('Раздача №', self.hand_number)
-        self.__log('-' * 80)
-        self.__log('В игре:')
-        for player in self.players:
-            self.__log(player.name, player.bank)
-
         self.deck = self.__create_deck()
         random.shuffle(self.deck)
         self.__give_cards()
 
-    def process_the_state(self, state):
-        self.__log('-' * 80)
-        self.log.append('Начинаем принимать ставки на ' + state)
-        self.__log('-' * 80)
+    def __next_act_plr(self):
+        self.current_plr_id += 1
+        if self.current_plr_id > len(self.plrs) - 1:
+                self.current_plr_id = 0
+
+        skip_list = ['Fold', 'All-in']
+        while self.plrs[self.current_plr_id].last_act in skip_list:
+            self.current_plr_id += 1
+            if self.current_plr_id > len(self.plrs) - 1:
+                self.current_plr_id = 0
+
+        next_plr = self.plrs[self.current_plr_id]
+
+        return next_plr
+
+    def __daler_id(self):
+        dealer, = [plr for plr in self.plrs if plr.dealer]
+
+        ind = self.plrs.index(dealer)
+
+        return ind
+
+    def __clear_acts(self, full=False):
+        if full:
+            for plr in self.plrs:
+                plr.last_act = 'None'
+        else:
+            for plr in self.plrs:
+                if plr.last_act != 'Fold' and plr.last_act != 'All-in':
+                    plr.last_act = 'None'
+
+    def __clear_bits(self):
+        for plr in self.plrs:
+            plr.last_bit = 0
+
+    def hand_result(self):
+
+        def select_winner():
+            self.__log('=' * 80)
+            if len(self.active_plrs(no_fold=True)) == 1:
+                winner, = self.active_plrs(no_fold=True)
+                winner.bank += self.bank
+                self.__log(winner.name, 'не открывая карты')
+            else:
+                win_combo_power = max(plr.combo.power for plr in self.plrs)
+                winners = [plr for plr in self.plrs if plr.combo.power == win_combo_power]
+                if len(winners) == 1:
+                    winner, = winners
+                    winner.bank += self.bank
+                    self.__log(winner.name, winner.combo.text)
+                else:
+                    for plr in winners:
+                        plr.bank += self.bank // len(winners)
+                        self.__log(', '.join([plr.name for plr in winners]), winners[0].combo.text)
+            self.bank = 0
+            self.__log('=' * 80)
+
+        def remove_loosers():
+            loosers = []
+            for plr in self.plrs:
+                if plr.bank == 0:
+                    loosers.append(plr)
+
+            for looser in loosers:
+                self.plrs.remove(looser)
+
+        def move_dealer():
+            old_dealer_id = self.__daler_id()
+            old_dealer = self.plrs[old_dealer_id]
+            old_dealer.dealer = False
+
+            new_dealer_id = old_dealer_id + 1
+            if new_dealer_id == len(self.plrs):
+                new_dealer_id = 0
+
+            while self.plrs[new_dealer_id] not in self.with_bank_plrs():
+                new_dealer_id += 1
+                if new_dealer_id == len(self.plrs):
+                    new_dealer_id = 0
+
+            new_dealer = self.plrs[new_dealer_id]
+            new_dealer.dealer = True
+
+            self.current_plr_id = self.plrs.index(new_dealer)
+
+        select_winner()
+        move_dealer()
+        remove_loosers()
+
+        self.river = []
+        self.__clear_acts('full')
+
+    def with_bank_plrs(self):
+        plrs_list = [plr for plr in self.plrs if plr.bank > 0]
+        return plrs_list
+
+    def active_plrs(self, no_fold=False, no_allin=False):
+        if no_fold and no_allin:
+            skip_list = ['Fold', 'All-in']
+        elif no_fold:
+            skip_list = ['Fold']
+        elif no_allin:
+            skip_list = ['All-in']
+
+        plrs = [plr for plr in self.plrs if plr.last_act not in skip_list]
+        return plrs
+
+    def __process_the_state(self, state):
+
+        def take_blinds():
+            if cfg.double_blinds:  # Вычисление блайндов если умножаются
+                double_index = (self.hand_number - 1) // cfg.double_blinds_interval  # Делим без остатка номер раздачи (от 0) на промежуток
+
+                self.sb = cfg.start_sb * (2 ** double_index)  # Умножаем стартовый блайнд на 2 в степени double_index
+                self.bb = cfg.start_bb * (2 ** double_index)
+            else:
+                self.sb = cfg.start_sb
+                self.bb = cfg.start_bb
+
+            sb_plr = self.__next_act_plr()
+            act = sb_plr.small_blind(self.sb)
+            self.bank += act['bit']
+            self.__log(self.plrs.index(sb_plr), sb_plr.name, sb_plr.last_act, sb_plr.last_bit)
+
+            bb_plr = self.__next_act_plr()
+            act = bb_plr.big_blind(self.bb)
+            self.bank += act['bit']
+            self.__log(self.plrs.index(bb_plr), bb_plr.name, bb_plr.last_act, bb_plr.last_bit)
+
+            self.min_bit = self.bb
+
+        def take_bits():
+            while True:
+
+                bb_flag = False
+                if len(self.active_plrs(no_fold=True, no_allin=True)) > 1:
+                    plr = self.__next_act_plr()
+
+                    if plr.last_bit == self.bb and plr.last_act == 'BB':
+                        bb_flag = True
+                    elif plr.last_bit == self.min_bit and plr.last_act == 'Raise':
+                        break
+                else:
+                    plr, = self.active_plrs(no_fold=True, no_allin=True)
+                    break
+
+                plr.action(self.plrs, self.river, self.min_bit, self.bb)
+                self.bank += plr.last_bit
+
+                self.__log(self.plrs.index(plr), plr.name, plr.last_act, plr.last_bit, plr.combo.text)
+
+                if bb_flag and plr.last_bit == 0 and self.min_bit > 0:
+                    break
+
+                if plr.last_bit > self.min_bit:
+                    self.min_bit = plr.last_bit
+
         if state == self.states[0]:
-            self.__take_blinds()
+            take_blinds()
         elif state == self.states[1]:
             self.river += [self.deck.pop()]
             self.river += [self.deck.pop()]
             self.river += [self.deck.pop()]
-            self.__log('На столе', [card.name for card in self.river])
         elif state == self.states[2]:
             self.river += [self.deck.pop()]
-            self.__log('На столе', [card.name for card in self.river])
         elif state == self.states[3]:
             self.river += [self.deck.pop()]
-            self.__log('На столе', [card.name for card in self.river])
 
-        def take_bits():
-
-            while True:
-
-                player = self.__next_player()
-
-                # Если игрок повышал и после него не повышали, выходим
-                if player.last_act != 'BB' and player.last_bit == self.min_bit and self.min_bit > 0:
-                    self.__log('Ставки приняты. После', player.name, 'никто не повышал.')
-                    break
-
-                # Если игрок делал BB, прищуриваемся
-                if player.last_act == 'BB':
-                    bb_player = True
-                else:
-                    bb_player = False
-
-                act = player.action(self.players, self.river, self.min_bit, self.bb)
-                self.bank += act['bit']
-
-                self.__log(player.name, act['name'], act['bit'], [card.name for card in player.cards], player.combo.text, [c.name for c in player.cards + self.river])
-                self.__log('Банк:', self.bank)
-
-                # Если игрок повысил, повышаем минимальную ставку
-                if act['bit'] > self.min_bit:
-                    self.min_bit = act['bit']
-
-                # Если игрок после BB не повысил, выходим
-                if bb_player and player.last_bit == 0 and self.min_bit == self.bb:
-                    self.__log('Ставки приняты. После BB', player.name, 'никто не повышал.')
-                    break
-
-                # Проверяем, остались ли игроки для ставок
-                if len(self.active_players()) == 1:
-                    last_player, = self.active_players()
-
-                    act = last_player.action(self.players, self.river, self.min_bit, self.bb)
-                    self.bank += act['bit']
-
-                    self.__log(last_player.name, act['name'], act['bit'], [card.name for card in last_player.cards], last_player.combo.text, [c.name for c in last_player.cards + self.river])
-                    self.__log('Банк:', self.bank)
-
-                    self.__log('Ставки приняты.', last_player.name, 'последний.')
-                    break
+        self.__log(self.hand_number, state, self.__daler_id(), ' '.join([c.name for c in self.river]), '-' * 30)
 
         take_bits()
-        # Записываем в лог результат обработки state
-        self.__log('-' * 80)
-        self.__log('Результат', state)
-        self.__log('-' * 80)
-        for player in self.players:
-            self.__log(player.name, player.last_act, player.last_bit)
 
-        self.clear_acts()
-        self.clear_bits()
+        # Очищаем записи о действиях игроков
+        self.__clear_acts()
+        self.__clear_bits()
         self.min_bit = 0
-        self.current_player_id = self.__daler_id()
+        self.current_plr_id = self.__daler_id()
 
-    def hand_result(self):
-        self.__log('-' * 80)
-        self.__log('Результат раздачи №', self.hand_number)
-        self.__log('-' * 80)
+    def process_hand(self):
+        for state in cfg.states:
 
-        def __select_winner():
-            if len(self.active_players()) == 1:
-                winner, = self.active_players()
-                winner.bank += self.bank
-                self.__log(winner.name, 'выиграл, не вскрывая карты.')
-            else:
-                win_combo_power = max(player.combo.power for player in self.players)
-                winners = [player for player in self.players if player.combo.power == win_combo_power]
-                if len(winners) == 1:
-                    winner, = winners
-                    winner.bank += self.bank
-                    self.__log(winner.name, 'выиграл с комбинацией', winner.combo.text)
-                else:
-                    for player in winners:
-                        player.bank += self.bank // len(winners)
-                        win_names = ', '.join([player.name for player in winners])
-                        self.__log('Выигрыш разделили', win_names, 'с комбинацией', winners[0].combo.text)
+            if len(self.active_plrs(no_fold=True, no_allin=True)) < 2:
+                break
+            self.__process_the_state(state)
 
-            self.bank = 0
 
-        def __move_dealer():
-            old_dealer_id = self.__daler_id()
-
-            in_game_players = [player for player in self.players if player.bank > 0]
-
-            new_dealer_id = old_dealer_id + 1
-            if new_dealer_id == len(self.players):
-                new_dealer_id = 0
-
-            while self.players[new_dealer_id] not in in_game_players:
-                new_dealer_id = old_dealer_id + 1
-                if new_dealer_id == len(self.players):
-                    new_dealer_id = 0
-
-            self.__log('Новый дилер:', self.players[new_dealer_id].name)
-
-        def __remove_loosers():
-            loosers = []
-            for player in self.players:
-                if player.bank == 0:
-                    loosers.append(player)
-
-            for looser in loosers:
-                self.players.remove(looser)
-
-            self.__log('Из игры выбывают', ', '.join([plr.name for plr in loosers]))
-
-        __select_winner()
-        __move_dealer()
-        __remove_loosers()
-        self.river = []
+if __name__ == '__main__':
+    main()

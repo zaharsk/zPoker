@@ -224,3 +224,6 @@ class Combo(cfg):
         self.text = ''
         self.cards = []
         self.test_cards()
+
+if __name__ == '__main__':
+    main()

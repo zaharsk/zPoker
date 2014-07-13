@@ -10,14 +10,7 @@ class GameConfig(object):
     double_blinds_interval = n_of_players
     start_sb = 50
     start_bb = start_sb * 2
-
-    def __init__(self):
-        super(GameConfig, self).__init__()
-
-
-class PlayerConfig(object):
-    """docstring for Player_Config"""
-    names = [
+    players_names = [
         'Андрей',
         'Василий',
         'Пётр',
@@ -29,6 +22,12 @@ class PlayerConfig(object):
         'Антон',
     ]
 
+    def __init__(self):
+        super(GameConfig, self).__init__()
+
+
+class PlayerConfig(object):
+    """docstring for Player_Config"""
     def __init__(self):
         super(PlayerConfig, self).__init__()
 
@@ -52,3 +51,6 @@ class ComboConfig(object):
 
     def __init__(self):
         super(ComboConfig, self).__init__()
+
+if __name__ == '__main__':
+    main()
