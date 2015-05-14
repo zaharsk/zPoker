@@ -3,10 +3,8 @@ game = game_class.Game()
 
 
 def show_log():
-    x = 0
-    for line in game.log:
+    for x, line in enumerate(game.log):
         print(x, line)
-        x += 1
     game.log = []
 
 while True:
